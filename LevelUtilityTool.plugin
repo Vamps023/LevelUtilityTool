@@ -1,0 +1,6 @@
+[plugin]
+name=LevelUtilityTool
+version=1.0.0
+description=Level Utility Tool - generate ObstacleBox and WorldOccluder nodes from selected Node References
+author=Vamps
+
