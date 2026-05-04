@@ -61,12 +61,14 @@ set(SOURCES
 	source/core/LevelUtilityToolEditorPlugin.cpp
 	source/processing/NodeGenerationService.cpp
 	source/ui/LevelUtilityToolPanel.cpp
+	source/extrusion/NetworkImportService.cpp
 )
 
 set(HEADERS
 	source/core/LevelUtilityToolEditorPlugin.h
 	source/processing/NodeGenerationService.h
 	source/ui/LevelUtilityToolPanel.h
+	source/extrusion/NetworkImportService.h
 )
 
 add_library(${target_name} SHARED ${SOURCES} ${HEADERS})
@@ -79,6 +81,7 @@ target_include_directories(${target_name}
 	${CMAKE_CURRENT_SOURCE_DIR}/source/core
 	${CMAKE_CURRENT_SOURCE_DIR}/source/processing
 	${CMAKE_CURRENT_SOURCE_DIR}/source/ui
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extrusion
 )
 
 target_compile_definitions(${target_name}
