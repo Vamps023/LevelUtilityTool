@@ -21,12 +21,26 @@ bool LevelUtilityToolEditorPlugin::init()
 	UnigineEditor::WindowManager::restoreLastWindowConfig(panel_, panel_->objectName());
 	UnigineEditor::WindowManager::show(panel_);
 
+	extruder_editor_plugin_ = new Extruder2EditorPlugin();
+	extruder_editor_plugin_->init();
+
+	GetExtruder2Plugin()->init();
+
 	Unigine::Log::message("LevelUtilityTool: Plugin initialized\n");
 	return true;
 }
 
 void LevelUtilityToolEditorPlugin::shutdown()
 {
+	if (extruder_editor_plugin_)
+	{
+		extruder_editor_plugin_->shutdown();
+		delete extruder_editor_plugin_;
+		extruder_editor_plugin_ = nullptr;
+	}
+
+	GetExtruder2Plugin()->shutdown();
+
 	if (panel_)
 	{
 		UnigineEditor::WindowManager::remove(panel_);

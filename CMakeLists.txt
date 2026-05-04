@@ -62,6 +62,13 @@ set(SOURCES
 	source/processing/NodeGenerationService.cpp
 	source/ui/LevelUtilityToolPanel.cpp
 	source/extrusion/NetworkImportService.cpp
+	source/extruder2_plugin/Private/ExtruderEditorLogic.cpp
+	source/extruder2_plugin/Private/ExtruderPlugin.cpp
+	source/extruder2_plugin/Private/ExtruderPluginInterface.cpp
+	source/extruder2_plugin/Private/ExtruderSystemLogic.cpp
+	source/extruder2_plugin/Private/ExtruderWorldLogic.cpp
+	source/extruder2_plugin/stubs/pugixml/pugixml.cpp
+	source/extruder2_editor_plugin/Private/ExtruderEditorPlugin.cpp
 )
 
 set(HEADERS
@@ -69,6 +76,12 @@ set(HEADERS
 	source/processing/NodeGenerationService.h
 	source/ui/LevelUtilityToolPanel.h
 	source/extrusion/NetworkImportService.h
+	source/extruder2_plugin/Private/ExtruderEditorLogic.h
+	source/extruder2_plugin/Private/ExtruderPlugin.h
+	source/extruder2_plugin/Private/ExtruderSystemLogic.h
+	source/extruder2_plugin/Private/ExtruderWorldLogic.h
+	source/extruder2_plugin/Public/ExtruderPluginInterface.h
+	source/extruder2_editor_plugin/Private/ExtruderEditorPlugin.h
 )
 
 add_library(${target_name} SHARED ${SOURCES} ${HEADERS})
@@ -82,6 +95,14 @@ target_include_directories(${target_name}
 	${CMAKE_CURRENT_SOURCE_DIR}/source/processing
 	${CMAKE_CURRENT_SOURCE_DIR}/source/ui
 	${CMAKE_CURRENT_SOURCE_DIR}/source/extrusion
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extruder2_plugin/Private
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extruder2_plugin/Public
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extruder2_plugin/stubs
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extruder2_plugin/stubs/common
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extruder2_plugin/stubs/unigine2_extruder
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extruder2_plugin/stubs/unigine2_graphics
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extruder2_plugin/stubs/pugixml
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extruder2_editor_plugin/Private
 )
 
 target_compile_definitions(${target_name}
@@ -115,6 +136,7 @@ if(UNIGINE_DOUBLE)
 endif()
 
 target_link_libraries(${target_name}
+	Shlwapi.lib
 	Qt5::Core
 	Qt5::Gui
 	Qt5::Widgets

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<property name="extrude" version="2.19.0.3" guid="2e7f00360d7493fa84a1d5588d78e8ffdd17aaa8">
+	<parameter name="snap_to_track" type="toggle">0</parameter>
+	<parameter name="track_horizontal_offset" type="double" min="-3" max="3" flags="expand" snap_to_track="1">0</parameter>
+	<parameter name="track_vertical_offset" type="double" min="-1" max="5" flags="expand" snap_to_track="1">0</parameter>
+</property>
