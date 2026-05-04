@@ -353,12 +353,8 @@ Unigine::NodePtr NetworkImportService::createLineNode(const std::vector<Unigine:
     if (points.size() < 2)
         return Unigine::NodePtr();
     
-    // Generate smooth points using cubic hermite spline with adaptive subdivision
-    const double tolerance = 0.005; // Same as Oksygen default smoothness
-    std::vector<Unigine::Math::Vec3> smoothPts = generateSmoothSegment(points, tolerance);
-    
-    if (smoothPts.size() < 2)
-        return Unigine::NodePtr();
+    // Use raw XML points - the XML already defines the track path at transition boundaries
+    const std::vector<Unigine::Math::Vec3>& smoothPts = points;
     
     // Create a single ObjectMeshDynamic (same approach as Oksygen spline plugin)
     Unigine::ObjectMeshDynamicPtr lineMesh = Unigine::ObjectMeshDynamic::create();
