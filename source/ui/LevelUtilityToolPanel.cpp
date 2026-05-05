@@ -2,19 +2,13 @@
 
 #include <QApplication>
 #include <QCheckBox>
-#include <QComboBox>
-#include <QFileDialog>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QLabel>
-#include <QLineEdit>
-#include <QListWidget>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QStyle>
 #include <QTimer>
-#include <QTreeWidget>
-#include <QTreeWidgetItem>
 #include <QVBoxLayout>
 
 #include <editor/UnigineSelection.h>
@@ -27,7 +21,6 @@ LevelUtilityToolPanel::LevelUtilityToolPanel(LevelUtility::NodeGenerationService
                                              QWidget* parent)
 	: QWidget(parent)
 	, service_(service)
-	, networkImportService_(std::make_unique<LevelUtility::NetworkImportService>())
 {
 	setObjectName("LevelUtilityToolPanel");
 	setWindowTitle("Level Utility Tool");
@@ -84,13 +77,6 @@ LevelUtilityToolPanel::LevelUtilityToolPanel(LevelUtility::NodeGenerationService
 	connect(UnigineEditor::Selection::instance(), &UnigineEditor::Selection::changed,
 	        this, &LevelUtilityToolPanel::refreshSelection);
 
-	// Network Import connections
-	connect(networkImportService_.get(), &LevelUtility::NetworkImportService::importFinished,
-	        this, &LevelUtilityToolPanel::onNetworkImportFinished);
-	connect(networkImportService_.get(), &LevelUtility::NetworkImportService::dataCleared,
-	        this, &LevelUtilityToolPanel::onNetworkDataCleared);
-	
-	setupNetworkImportUI();
 	refreshSelection();
 }
 
@@ -176,146 +162,4 @@ void LevelUtilityToolPanel::setStatusMessage(const QString& message, bool isErro
 {
 	statusLabel_->setText(message);
 	statusLabel_->setStyleSheet(isError ? "color: #c62828;" : "color: #4a4a4a;");
-}
-
-void LevelUtilityToolPanel::setupNetworkImportUI()
-{
-	QVBoxLayout* mainLayout = qobject_cast<QVBoxLayout*>(layout());
-	if (!mainLayout)
-		return;
-
-	// Network Import section title
-	QLabel* networkTitle = new QLabel("Network Import", this);
-	networkTitle->setStyleSheet("font-size: 14px; font-weight: 700; margin-top: 10px;");
-	mainLayout->addWidget(networkTitle);
-
-	// File selection row
-	QHBoxLayout* fileLayout = new QHBoxLayout();
-	networkFileLabel_ = new QLabel("File: none selected", this);
-	networkFileLabel_->setWordWrap(true);
-	importXmlButton_ = new QPushButton("Import XML", this);
-	clearNetworkButton_ = new QPushButton("Clear", this);
-	clearNetworkButton_->setEnabled(false);
-	
-	fileLayout->addWidget(networkFileLabel_, 1);
-	fileLayout->addWidget(importXmlButton_);
-	fileLayout->addWidget(clearNetworkButton_);
-	mainLayout->addLayout(fileLayout);
-
-	// Status label
-	networkStatusLabel_ = new QLabel("Status: Ready", this);
-	networkStatusLabel_->setWordWrap(true);
-	mainLayout->addWidget(networkStatusLabel_);
-
-	// Visualization mode dropdown
-	QHBoxLayout* modeLayout = new QHBoxLayout();
-	QLabel* modeLabel = new QLabel("Mode:", this);
-	visualizationModeCombo_ = new QComboBox(this);
-	visualizationModeCombo_->addItem("Sequential Spline", static_cast<int>(LevelUtility::NetworkImportService::VisualizationMode::SequentialSpline));
-	visualizationModeCombo_->addItem("Segment Lines", static_cast<int>(LevelUtility::NetworkImportService::VisualizationMode::SegmentLines));
-	visualizationModeCombo_->setEnabled(false);
-	
-	modeLayout->addWidget(modeLabel);
-	modeLayout->addWidget(visualizationModeCombo_, 1);
-	mainLayout->addLayout(modeLayout);
-
-	// Toggle visuals button
-	toggleVisualsButton_ = new QPushButton("Hide Visuals", this);
-	toggleVisualsButton_->setEnabled(false);
-	mainLayout->addWidget(toggleVisualsButton_);
-
-	// Segments tree view
-	segmentsTree_ = new QTreeWidget(this);
-	segmentsTree_->setHeaderLabel("Track Segments");
-	segmentsTree_->setMaximumHeight(150);
-	segmentsTree_->setEnabled(false);
-	mainLayout->addWidget(segmentsTree_);
-
-	// Connect signals
-	connect(importXmlButton_, &QPushButton::clicked, this, &LevelUtilityToolPanel::importNetworkXml);
-	connect(clearNetworkButton_, &QPushButton::clicked, this, &LevelUtilityToolPanel::clearNetwork);
-	connect(visualizationModeCombo_, QOverload<int>::of(&QComboBox::currentIndexChanged), 
-	        this, &LevelUtilityToolPanel::onVisualizationModeChanged);
-	connect(toggleVisualsButton_, &QPushButton::clicked, this, &LevelUtilityToolPanel::toggleVisualsVisible);
-}
-
-void LevelUtilityToolPanel::importNetworkXml()
-{
-	QString filePath = QFileDialog::getOpenFileName(this, "Import Network XML", QString(), "XML Files (*.xml)");
-	if (filePath.isEmpty())
-		return;
-	
-	networkImportService_->importXml(filePath);
-}
-
-void LevelUtilityToolPanel::clearNetwork()
-{
-	networkImportService_->clear();
-}
-
-void LevelUtilityToolPanel::onNetworkImportFinished(bool success, const QString& message)
-{
-	if (success)
-	{
-		networkFileLabel_->setText("File: " + networkImportService_->filePath());
-		networkStatusLabel_->setText("Status: " + message);
-		
-		// Enable controls
-		clearNetworkButton_->setEnabled(true);
-		visualizationModeCombo_->setEnabled(true);
-		toggleVisualsButton_->setEnabled(true);
-		segmentsTree_->setEnabled(true);
-		
-		// Populate tree
-		segmentsTree_->clear();
-		const auto& segments = networkImportService_->trackSegments();
-		for (const auto& segment : segments)
-		{
-			QString itemText = QString("%1: %2").arg(segment.segmentId).arg(QString::fromStdString(segment.name));
-			QTreeWidgetItem* item = new QTreeWidgetItem(segmentsTree_);
-			item->setText(0, itemText);
-		}
-		
-		// Generate visuals
-		networkImportService_->generateVisuals();
-	}
-	else
-	{
-		networkStatusLabel_->setText("Status: " + message);
-		networkStatusLabel_->setStyleSheet("color: #c62828;");
-	}
-}
-
-void LevelUtilityToolPanel::onNetworkDataCleared()
-{
-	networkFileLabel_->setText("File: none selected");
-	networkStatusLabel_->setText("Status: Ready");
-	networkStatusLabel_->setStyleSheet("");
-	
-	// Disable controls
-	clearNetworkButton_->setEnabled(false);
-	visualizationModeCombo_->setEnabled(false);
-	toggleVisualsButton_->setEnabled(false);
-	toggleVisualsButton_->setText("Hide Visuals");
-	segmentsTree_->setEnabled(false);
-	segmentsTree_->clear();
-}
-
-void LevelUtilityToolPanel::onVisualizationModeChanged(int index)
-{
-	if (index < 0)
-		return;
-	
-	auto mode = static_cast<LevelUtility::NetworkImportService::VisualizationMode>(
-		visualizationModeCombo_->itemData(index).toInt());
-	
-	networkImportService_->setVisualizationMode(mode);
-}
-
-void LevelUtilityToolPanel::toggleVisualsVisible()
-{
-	bool currentlyVisible = networkImportService_->areVisualsVisible();
-	networkImportService_->setVisualsVisible(!currentlyVisible);
-	
-	toggleVisualsButton_->setText(currentlyVisible ? "Show Visuals" : "Hide Visuals");
 }

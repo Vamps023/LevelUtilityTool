@@ -8,9 +8,6 @@ namespace LevelUtility
 class NodeGenerationService;
 }
 
-#include "../extruder2_plugin/Private/ExtruderPlugin.h"
-#include "../extruder2_editor_plugin/Private/ExtruderEditorPlugin.h"
-
 class LevelUtilityToolPanel;
 
 class LevelUtilityToolEditorPlugin final : public QObject, public UnigineEditor::Plugin
@@ -30,5 +27,4 @@ public:
 private:
 	LevelUtility::NodeGenerationService* service_ = nullptr;
 	LevelUtilityToolPanel* panel_ = nullptr;
-	Extruder2EditorPlugin* extruder_editor_plugin_ = nullptr;
 };

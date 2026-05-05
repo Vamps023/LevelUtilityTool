@@ -1,5 +1,0 @@
-unigine_editor_plugin("Extruder2EditorPlugin" "Extruder2" "EditorPlugin")
-target_link_libraries("Extruder2EditorPlugin" PRIVATE "PluginOrder")
-target_link_libraries("Extruder2EditorPlugin" PRIVATE "Extruder2Plugin")
-target_link_libraries("Extruder2EditorPlugin" PRIVATE "MountPlugin")
-target_link_libraries("Extruder2EditorPlugin" PRIVATE "ShLwApi.Lib")
