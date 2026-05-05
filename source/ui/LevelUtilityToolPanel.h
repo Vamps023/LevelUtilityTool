@@ -8,6 +8,10 @@ class QCheckBox;
 class QLabel;
 class QPushButton;
 class QTimer;
+class QTabWidget;
+class ExtrusionToolWidget;
+
+class ExtrusionPlugin;
 
 class LevelUtilityToolPanel final : public QWidget
 {
@@ -19,12 +23,16 @@ public:
 	                               QWidget* parent = nullptr);
 	~LevelUtilityToolPanel() override = default;
 
+	void setExtrusionPlugin(ExtrusionPlugin* plugin);
+
 private slots:
 	void refreshSelection();
 	void createObstacleBoxes();
 	void createWorldOccluders();
 	void onBatchProgress(int created, int requested);
 	void onGenerationFinished(const LevelUtility::GenerationResult& result);
+	void onExtrusionUpdate();
+	void onSelectionChanged();
 
 private:
 	void startGeneration(LevelUtility::GenerationType type);
@@ -33,6 +41,7 @@ private:
 
 	LevelUtility::NodeGenerationService* service_ = nullptr;
 
+	// Obstacle/Occluder tab widgets
 	QLabel* selectionLabel_ = nullptr;
 	QLabel* statusLabel_ = nullptr;
 	QCheckBox* groupCheckBox_ = nullptr;
@@ -40,4 +49,11 @@ private:
 	QPushButton* obstacleButton_ = nullptr;
 	QPushButton* occluderButton_ = nullptr;
 	QTimer* batchTimer_ = nullptr;
+
+	// Tab container
+	QTabWidget* tabWidget_ = nullptr;
+	ExtrusionToolWidget* extrusionWidget_ = nullptr;
+
+	// Extrusion runtime
+	ExtrusionPlugin* extrusion_plugin_ = nullptr;
 };

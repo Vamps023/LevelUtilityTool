@@ -1,4 +1,6 @@
 #include "LevelUtilityToolPanel.h"
+#include "../extrusion_editor/Private/ExtrusionToolWidget.h"
+#include "../extrusion/Private/ExtrusionPlugin.h"
 
 #include <QApplication>
 #include <QCheckBox>
@@ -8,8 +10,10 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QStyle>
+#include <QTabWidget>
 #include <QTimer>
 #include <QVBoxLayout>
+#include <QMetaObject>
 
 #include <editor/UnigineSelection.h>
 #include <editor/UnigineSelector.h>
@@ -34,7 +38,17 @@ LevelUtilityToolPanel::LevelUtilityToolPanel(LevelUtility::NodeGenerationService
 	titleLabel->setStyleSheet("font-size: 16px; font-weight: 700;");
 	mainLayout->addWidget(titleLabel);
 
-	QFrame* selectionFrame = new QFrame(this);
+	// Tab widget
+	tabWidget_ = new QTabWidget(this);
+	mainLayout->addWidget(tabWidget_);
+
+	// --- Tab 1: Obstacle / Occluder ---
+	QWidget* obstacleTab = new QWidget(this);
+	QVBoxLayout* obstacleLayout = new QVBoxLayout(obstacleTab);
+	obstacleLayout->setContentsMargins(10, 10, 10, 10);
+	obstacleLayout->setSpacing(12);
+
+	QFrame* selectionFrame = new QFrame(obstacleTab);
 	QHBoxLayout* selectionLayout = new QHBoxLayout(selectionFrame);
 	selectionLayout->setContentsMargins(10, 10, 10, 10);
 	selectionLayout->setSpacing(8);
@@ -44,24 +58,30 @@ LevelUtilityToolPanel::LevelUtilityToolPanel(LevelUtility::NodeGenerationService
 	refreshButton_->setIcon(QApplication::style()->standardIcon(QStyle::SP_BrowserReload));
 	selectionLayout->addWidget(selectionLabel_, 1);
 	selectionLayout->addWidget(refreshButton_);
-	mainLayout->addWidget(selectionFrame);
+	obstacleLayout->addWidget(selectionFrame);
 
-	groupCheckBox_ = new QCheckBox("Group under DummyNode", this);
+	groupCheckBox_ = new QCheckBox("Group under DummyNode", obstacleTab);
 	groupCheckBox_->setChecked(true);
-	mainLayout->addWidget(groupCheckBox_);
+	obstacleLayout->addWidget(groupCheckBox_);
 
-	obstacleButton_ = new QPushButton("Create ObstacleBox", this);
+	obstacleButton_ = new QPushButton("Create ObstacleBox", obstacleTab);
 	obstacleButton_->setIcon(QApplication::style()->standardIcon(QStyle::SP_FileDialogNewFolder));
-	mainLayout->addWidget(obstacleButton_);
+	obstacleLayout->addWidget(obstacleButton_);
 
-	occluderButton_ = new QPushButton("Create WorldOccluder", this);
+	occluderButton_ = new QPushButton("Create WorldOccluder", obstacleTab);
 	occluderButton_->setIcon(QApplication::style()->standardIcon(QStyle::SP_ArrowRight));
-	mainLayout->addWidget(occluderButton_);
+	obstacleLayout->addWidget(occluderButton_);
 
-	statusLabel_ = new QLabel(this);
+	statusLabel_ = new QLabel(obstacleTab);
 	statusLabel_->setWordWrap(true);
-	mainLayout->addWidget(statusLabel_);
-	mainLayout->addStretch(1);
+	obstacleLayout->addWidget(statusLabel_);
+	obstacleLayout->addStretch(1);
+
+	tabWidget_->addTab(obstacleTab, "Obstacle / Occluder");
+
+	// --- Tab 2: Extrusion Tool ---
+	extrusionWidget_ = new ExtrusionToolWidget(this);
+	tabWidget_->addTab(extrusionWidget_, "Extrusion Tool");
 
 	batchTimer_ = new QTimer(this);
 	batchTimer_->setInterval(0);
@@ -75,7 +95,7 @@ LevelUtilityToolPanel::LevelUtilityToolPanel(LevelUtility::NodeGenerationService
 	connect(service_, &LevelUtility::NodeGenerationService::generationFinished,
 	        this, &LevelUtilityToolPanel::onGenerationFinished);
 	connect(UnigineEditor::Selection::instance(), &UnigineEditor::Selection::changed,
-	        this, &LevelUtilityToolPanel::refreshSelection);
+	        this, &LevelUtilityToolPanel::onSelectionChanged);
 
 	refreshSelection();
 }
@@ -162,4 +182,29 @@ void LevelUtilityToolPanel::setStatusMessage(const QString& message, bool isErro
 {
 	statusLabel_->setText(message);
 	statusLabel_->setStyleSheet(isError ? "color: #c62828;" : "color: #4a4a4a;");
+}
+
+void LevelUtilityToolPanel::setExtrusionPlugin(ExtrusionPlugin* plugin)
+{
+	extrusion_plugin_ = plugin;
+}
+
+void LevelUtilityToolPanel::onExtrusionUpdate()
+{
+	if (extrusion_plugin_)
+		extrusion_plugin_->update();
+}
+
+void LevelUtilityToolPanel::onSelectionChanged()
+{
+	// First do the normal refresh
+	refreshSelection();
+
+	// Then notify extrusion plugin of selection change
+	if (extrusion_plugin_)
+	{
+		extrusion_plugin_->selection_changed();
+		// Defer mesh update to avoid modifying nodes during editor's selection callback
+		QTimer::singleShot(0, this, &LevelUtilityToolPanel::onExtrusionUpdate);
+	}
 }

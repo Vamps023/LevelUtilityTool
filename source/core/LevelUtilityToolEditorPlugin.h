@@ -9,6 +9,7 @@ class NodeGenerationService;
 }
 
 class LevelUtilityToolPanel;
+class ExtrusionPlugin;
 
 class LevelUtilityToolEditorPlugin final : public QObject, public UnigineEditor::Plugin
 {
@@ -24,7 +25,10 @@ public:
 	bool init() override;
 	void shutdown() override;
 
+	ExtrusionPlugin* extrusionPlugin() const { return extrusion_plugin_; }
+
 private:
 	LevelUtility::NodeGenerationService* service_ = nullptr;
 	LevelUtilityToolPanel* panel_ = nullptr;
+	ExtrusionPlugin* extrusion_plugin_ = nullptr;
 };

@@ -61,12 +61,21 @@ set(SOURCES
 	source/core/LevelUtilityToolEditorPlugin.cpp
 	source/processing/NodeGenerationService.cpp
 	source/ui/LevelUtilityToolPanel.cpp
+	source/extrusion/Private/ExtrusionPlugin.cpp
+	source/extrusion/Private/ExtrusionEngine.cpp
+	source/extrusion_editor/Private/ExtrusionToolWidget.cpp
+	source/extrusion_editor/Private/ExtrusionQtEngine.cpp
 )
 
 set(HEADERS
 	source/core/LevelUtilityToolEditorPlugin.h
 	source/processing/NodeGenerationService.h
 	source/ui/LevelUtilityToolPanel.h
+	source/extrusion/Public/ExtrusionPluginInterface.h
+	source/extrusion/Private/ExtrusionPlugin.h
+	source/extrusion/Private/ExtrusionEngine.h
+	source/extrusion_editor/Private/ExtrusionToolWidget.h
+	source/extrusion_editor/Private/ExtrusionQtEngine.h
 )
 
 add_library(${target_name} SHARED ${SOURCES} ${HEADERS})
@@ -79,12 +88,16 @@ target_include_directories(${target_name}
 	${CMAKE_CURRENT_SOURCE_DIR}/source/core
 	${CMAKE_CURRENT_SOURCE_DIR}/source/processing
 	${CMAKE_CURRENT_SOURCE_DIR}/source/ui
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extrusion/Public
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extrusion/Private
+	${CMAKE_CURRENT_SOURCE_DIR}/source/extrusion_editor/Private
 )
 
 target_compile_definitions(${target_name}
 	PRIVATE
 	QT_NO_DEBUG
 	_CRT_SECURE_NO_WARNINGS
+	EXTRUSIONPLUGIN_EXPORT
 	$<$<BOOL:${UNIGINE_DOUBLE}>:UNIGINE_DOUBLE>
 )
 
