@@ -204,7 +204,7 @@ void LevelUtilityToolPanel::onSelectionChanged()
 	if (extrusion_plugin_)
 	{
 		extrusion_plugin_->selection_changed();
-		// Defer mesh update to avoid modifying nodes during editor's selection callback
-		QTimer::singleShot(0, this, &LevelUtilityToolPanel::onExtrusionUpdate);
+		// TEMPORARILY DISABLED: Mesh creation to test if crash is in node hierarchy vs mesh generation
+		// QTimer::singleShot(0, this, &LevelUtilityToolPanel::onExtrusionUpdate);
 	}
 }

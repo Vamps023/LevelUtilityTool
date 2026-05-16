@@ -305,10 +305,13 @@ ObjectMeshDynamicPtr ExtrusionEngine::create_or_update_extruded_mesh(const std::
 		}
 		mesh->setName("extruded");
 		mesh->setSaveToWorldEnabled(true);
-		mesh->setShowInEditorEnabled(true);
 		mesh->setEnabled(true);
 		if (current_extrude_node_)
 			current_extrude_node_->addChild(mesh);
+
+		// CRITICAL: Make editor-managed so editor hierarchy iteration doesn't crash
+		mesh->setOwner(false);
+		mesh->setShowInEditorEnabled(true);
 
 		// Add a surface before setting material
 		mesh->addSurface("extruded");

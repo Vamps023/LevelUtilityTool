@@ -217,14 +217,11 @@ void ExtrusionPlugin::create_clicked(const WidgetPtr&, int)
 	if (prop)
 		root->setProperty(0, prop);
 
-	NodeReferencePtr templ = NodeReference::create(selected_file_path_.c_str());
-	if (templ)
-	{
-		templ->setName("template");
-		templ->setEnabled(false);
-		templ->setSaveToWorldEnabled(true);
-		root->addChild(templ);
-	}
+	NodeDummyPtr templ = NodeDummy::create();
+	templ->setName("template");
+	templ->setEnabled(false);
+	templ->setSaveToWorldEnabled(true);
+	root->addChild(templ);
 
 	NodeDummyPtr spline = NodeDummy::create();
 	spline->setName("spline");

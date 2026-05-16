@@ -27,31 +27,16 @@ bool ExtrusionQtEngine::createExtrudeNode(const QString& nodeFilePath)
 	root->setWorldPosition(pos);
 	root->setSaveToWorldEnabled(true);
 
-	// Try to assign extrude property, but don't fail if it doesn't exist
-	PropertyPtr prop = Properties::findProperty("extrude");
-	if (prop)
-	{
-		root->setProperty(0, prop);
-		Log::message("ExtrusionQtEngine: Assigned 'extrude' property to node\n");
-	}
-	else
-	{
-		Log::warning("ExtrusionQtEngine: 'extrude' property not found in project. Node will still work for selection-based extrusion.\n");
-	}
+	// Oksygen pattern: NO property assignment (property may cause editor crash)
+	// Just use name-based identification instead
 
-	NodeReferencePtr templ = NodeReference::create(nodeFilePath.toUtf8().constData());
-	if (templ)
-	{
-		templ->setName("template");
-		templ->setEnabled(false);
-		templ->setSaveToWorldEnabled(true);
-		root->addChild(templ);
-		Log::message("ExtrusionQtEngine: Loaded template: %s\n", templ->getName());
-	}
-	else
-	{
-		Log::warning("ExtrusionQtEngine: Failed to load template from %s\n", nodeFilePath.toUtf8().constData());
-	}
+	// Template: use plain NodeDummy instead of NodeReference to avoid crash
+	// NodeReference can cause editor crash when expanding parent
+	NodeDummyPtr templ = NodeDummy::create();
+	templ->setName("template");
+	templ->setEnabled(false);
+	templ->setSaveToWorldEnabled(true);
+	root->addChild(templ);
 
 	NodeDummyPtr spline = NodeDummy::create();
 	spline->setName("spline");
@@ -60,27 +45,20 @@ bool ExtrusionQtEngine::createExtrudeNode(const QString& nodeFilePath)
 
 	NodeDummyPtr knot0 = NodeDummy::create();
 	knot0->setName("knot0");
-	knot0->setPosition(Vec3(-2.0f, 0.0f, 0.0f));  // Local to spline
+	knot0->setPosition(Vec3(-2.0f, 0.0f, 0.0f));
 	knot0->setSaveToWorldEnabled(true);
 	spline->addChild(knot0);
 
 	NodeDummyPtr knot1 = NodeDummy::create();
 	knot1->setName("knot1");
-	knot1->setPosition(Vec3(2.0f, 0.0f, 0.0f));  // Local to spline
+	knot1->setPosition(Vec3(2.0f, 0.0f, 0.0f));
 	knot1->setSaveToWorldEnabled(true);
 	spline->addChild(knot1);
 
-	// Oksygen pattern: make root editor-managed and visible in hierarchy
-	// CRITICAL: All children must also be editor-managed to avoid crash
-	// when editor iterates the hierarchy
+	// Oksygen pattern: set owner AFTER all children added
+	// Only root gets setOwner(false) - children inherit visibility via recursive flag
 	root->setOwner(false);
 	root->setShowInEditorEnabledRecursive(true);
-
-	// Also set owner on all children to ensure consistent editor state
-	if (templ) templ->setOwner(false);
-	spline->setOwner(false);
-	knot0->setOwner(false);
-	knot1->setOwner(false);
 
 	Log::message("ExtrusionQtEngine: Created extrude node hierarchy from %s\n", nodeFilePath.toUtf8().constData());
 	return true;
